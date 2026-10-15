@@ -1,6 +1,6 @@
 ---
 name: nextdns
-description: Control and diagnose NextDNS DNS filtering through its HTTP API. List profiles, query DNS logs and analytics, manage allow and deny lists, and toggle parental-control services, categories and blocklists. Use when the user mentions NextDNS, DNS filtering or blocking, or asks why a domain is blocked or which device is querying it.
+description: Control and diagnose NextDNS DNS filtering through its HTTP API. List profiles, query and stream DNS logs, pull analytics, manage allow and deny lists, DNS rewrites, and toggle parental-control services, categories and blocklists. Use when the user mentions NextDNS, DNS filtering or blocking, or asks why a domain is blocked or which device is querying it.
 ---
 
 # NextDNS
@@ -12,20 +12,26 @@ Thin CLI over the NextDNS API (`https://api.nextdns.io`). One command, one JSON 
 - Needs Node.js 18+ and `NEXTDNS_API_KEY` in the environment.
 - The key is at the bottom of the account page: https://my.nextdns.io/account
 - Never print the key or write it into files. Environment only.
-- `NEXTDNS_API_URL` overrides the API base URL. Rarely needed.
+- `NEXTDNS_PROFILE` sets a default profile id. `NEXTDNS_API_URL` overrides the API base URL. Rarely needed.
 
 ## Commands
 
-Run from this skill's directory. All output is JSON.
+Run from this skill's directory. All output is JSON. The profile id comes from the first argument, `--profile <id>`, or the `NEXTDNS_PROFILE` default; with domains or metrics in the way, pass the profile explicitly (argument or flag).
 
 | Command | Purpose |
 | --- | --- |
 | `node scripts/nextdns.mjs profiles` | List profiles (id, name) |
-| `node scripts/nextdns.mjs logs <profile> [--search X] [--status blocked] [--from -24h] [--limit N] [--raw] [--cursor C]` | DNS query logs |
+| `node scripts/nextdns.mjs logs <profile> [--search X] [--status blocked] [--from -24h] [--raw] [--cursor C]` | DNS query logs |
+| `node scripts/nextdns.mjs logs <profile> --stream --status blocked --max-events 50` | Live SSE tail; `--duration <s>` bounds it too, `--id` resumes |
+| `node scripts/nextdns.mjs logs-download <profile> [--out file]` | CSV log export URL, or the file itself with `--out` |
+| `node scripts/nextdns.mjs clear-logs <profile>` | Permanently delete all logs (state-changing) |
 | `node scripts/nextdns.mjs analytics <profile> <metric> [--from -7d] [--limit 20]` | Metrics: `status`, `domains`, `reasons`, `ips`, `devices`, `protocols`, `queryTypes`, `ipVersions`, `dnssec`, `encryption`, `destinations` |
 | `node scripts/nextdns.mjs allowlist <profile>` / `denylist <profile>` | List entries |
+| `node scripts/nextdns.mjs rewrites <profile>` | List DNS rewrites |
 | `node scripts/nextdns.mjs allow <profile> <domain>...` / `deny <profile> <domain>...` | Add entries |
 | `node scripts/nextdns.mjs allow-remove <profile> <domain>...` / `deny-remove <profile> <domain>...` | Remove entries |
+| `node scripts/nextdns.mjs rewrite <profile> <name> <content>` | Add a DNS rewrite (hostname to IP or CNAME) |
+| `node scripts/nextdns.mjs rewrite-remove <profile> <name\|id>...` | Remove rewrites by name or id |
 | `node scripts/nextdns.mjs toggle <path> <on\|off>` | Enable or disable an array entry |
 | `node scripts/nextdns.mjs get <path>` | GET any endpoint |
 | `node scripts/nextdns.mjs patch <path> <json>` / `post <path> [json]` / `delete <path>` | Write any endpoint |
@@ -44,7 +50,8 @@ profiles/<id>/parentalControl               services, categories, safeSearch, yo
 profiles/<id>/parentalControl/services      service entries, e.g. tiktok, fortnite
 profiles/<id>/parentalControl/categories    category entries, e.g. porn, social-networks, gambling
 profiles/<id>/denylist / allowlist          domain entries with an active flag
-profiles/<id>/settings/performance           cnameFlattening, cacheBoost, ecs
+profiles/<id>/rewrites                      hostname overrides: POST {name, content}, DELETE by id, no PATCH
+profiles/<id>/settings/performance          cnameFlattening, cacheBoost, ecs
 profiles/<id>/settings/logs                 enabled, retention, location
 profiles/<id>/settings/blockPage            block page toggle
 profiles/<id>/settings/web3                 web3 block toggle
@@ -52,20 +59,26 @@ profiles/<id>/analytics/<metric>            see the analytics command
 profiles/<id>/logs                          see the logs command
 ```
 
-Object endpoints (such as `settings/performance`) accept partial JSON through `patch`. Array endpoints accept `post` for new entries; `toggle` does this automatically when the entry is missing.
+Rewrites are not in the official API docs yet; the shape above matches what the web app itself uses.
 
 ## Workflows
 
 - **Why is domain X blocked?** `logs <profile> --search X --from -24h`. Each hit carries `reasons` naming the blocklist or parental-control rule. Then `get profiles/<id>/parentalControl` (or the matching section) to inspect the rule and propose a change.
+- **What is being queried right now?** `logs <profile> --stream --max-events 50`. Each stdout line is one log event; the stderr summary carries the last event id for `--id` resume. Filter with `--status blocked`, `--search X` or `--device <id>`.
 - **Top blocked apps:** `analytics <profile> reasons`, then `analytics <profile> domains --status blocked`.
 - **Temporarily allow a broken site:** confirm with the user, then `allow <profile> example.com`. Remind them to revert later with `allow-remove`.
 - **Parental control:** `toggle profiles/<id>/parentalControl/categories/porn on`, or `toggle profiles/<id>/parentalControl/services/tiktok on`. `toggle` deactivates entries with `off`; `*-remove` deletes them.
+- **Point a hostname at a local box:** `rewrite <profile> nas.home 192.168.1.100` (or a CNAME target). To change one, remove and re-add: the API has no PATCH for rewrites.
+- **Export logs for analysis:** `logs-download <profile> --out logs.csv`.
 - **Settings change:** `patch profiles/<id>/settings/performance '{"cnameFlattening":true}'`.
 
 ## Rules
 
-- Read-only by default. Ask the user before `allow`, `deny`, `*-remove`, `toggle`, `patch`, `post`, `delete`.
+- Read-only by default. Ask the user before `allow`, `deny`, `*-remove`, `toggle`, `patch`, `post`, `delete`, `rewrite`, `rewrite-remove`, `clear-logs`.
+- `clear-logs` permanently deletes every log of the profile.
+- Always bound `logs --stream` with `--max-events` or `--duration`. An unbounded stream runs until interrupted.
 - Paginated responses carry `meta.pagination.cursor`. Continue with `--cursor`; there is no next page when it is null.
 - Dates accept relative values: `-24h`, `-7d`, `-3M`, `now`.
 - User errors can come back as HTTP 200 with `{ "errors": [...] }`. Always check for `errors` before treating output as success, and report `code` and `detail` as they are.
+- On HTTP 429 the CLI prints the wait (Retry-After). Wait it out; do not retry in a tight loop.
 - The API is beta. When a typed command fails, fall back to `get` or `patch` on the raw path before guessing.

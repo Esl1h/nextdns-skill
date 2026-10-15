@@ -10,7 +10,7 @@
     {
       "name": "nextdns",
       "source": "./",
-      "description": "Control and diagnose NextDNS DNS filtering through its HTTP API: profiles, DNS logs and analytics, allow and deny lists, parental control.",
+      "description": "Control and diagnose NextDNS DNS filtering through its HTTP API: profiles, DNS logs and live streaming, analytics, allow and deny lists, DNS rewrites, parental control.",
       "license": "MIT",
       "keywords": ["nextdns", "dns", "adblock", "filtering", "parental-control", "network"]
     }

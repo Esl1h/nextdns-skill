@@ -21,6 +21,8 @@ Não há etapa de build.
 - A skill lê por padrão. Ações que mudam estado exigem confirmação do usuário; mantenha essa regra no `SKILL.md`.
 - O CLI usa só a biblioteca padrão do Node. Não acrescente dependências.
 - O `parseArgs` do Node rejeita valores que começam com hífen; o CLI normaliza `--from -24h` para `--from=-24h` antes do parse. Não remova essa normalização: as datas relativas do NextDNS dependem dela.
+- O streaming de logs (`logs --stream`) exige sempre um limite (`--max-events` ou `--duration`); sessão sem limite trava o agente. Para encerrar o stream no meio do `for await`, use `break`: o iterador cancela o stream. Chamar `response.body.cancel()` com o iterador ativo lança `ReadableStream is locked`.
+- O endpoint de rewrites não tem PATCH na API: mudar um rewrite é remover e recriar. O CLI resolve nomes para ids antes de deletar e aborta se algum alvo não casa; preserve essas duas garantias.
 - Mantenha os dois arquivos `.claude-plugin/` em sincronia com o `SKILL.md` (nome, descrição, palavras-chave). Ao mudar o comportamento da skill, suba a versão no `plugin.json`.
 - OpenCode não usa manifest de plugin para skills: elas são descobertas dos diretórios de skills (`~/.config/opencode/skills`, `~/.claude/skills`, `.agents/skills`) ou instaladas pelo CLI do skills.sh. Não crie manifest para o OpenCode.
 
