@@ -428,6 +428,30 @@ test("analytics series options fail without ;series or --from", async () => {
   );
 });
 
+test("errors in an HTTP 200 body still fail with exit code 1", async () => {
+  await withApi(
+    () => ({ status: 200, json: { errors: [{ code: "duplicate", detail: "already there" }] } }),
+    async (port) => {
+      const result = await runCli(["allow", "abc123", "good.com"], port);
+      assert.equal(result.status, 1);
+      assert.equal(result.stdout, "");
+      assert.match(result.stderr, /HTTP 200/);
+      assert.match(result.stderr, /"code": "duplicate"/);
+    },
+  );
+});
+
+test("analytics takes the profile from NEXTDNS_PROFILE when only a metric is given", async () => {
+  await withApi(
+    () => ({ status: 200, json: { data: [] } }),
+    async (port, seen) => {
+      const result = await runCli(["analytics", "reasons"], port, { NEXTDNS_PROFILE: "env123" });
+      assert.equal(result.status, 0);
+      assert.equal(new URL(seen[0].url, "http://api").pathname, "/profiles/env123/analytics/reasons");
+    },
+  );
+});
+
 test("analytics domains filters by --status", async () => {
   await withApi(
     () => ({ status: 200, json: { data: [] } }),
