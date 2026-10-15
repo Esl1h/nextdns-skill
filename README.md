@@ -62,7 +62,7 @@ The skill needs Node.js 18.3+. See [SKILL.md](SKILL.md) for the full command ref
 
 ## Development
 
-No build step. Tests run the CLI against a mock API server, including SSE streaming and every error path; no NextDNS account is needed.
+No build step. Tests run the CLI against a mock API server, including SSE streaming and every error path; no NextDNS account is needed. CI runs them on Node 18, 20 and 22.
 
 ```sh
 node --test tests/*.test.mjs
