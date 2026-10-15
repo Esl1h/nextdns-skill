@@ -9,6 +9,8 @@ An agent skill that controls NextDNS through its documented HTTP API (`https://a
 - `SKILL.md` is the source of truth for the skill.
 - `scripts/nextdns.mjs` is the CLI (Node 18.3+, no dependencies).
 - `tests/nextdns.test.mjs` runs the CLI against a mock API.
+- `evals/triggers.json` holds prompts that should and should not load the skill; rerun it after changing the `description`.
+- `.github/workflows/test.yml` runs the tests on Node 18, 20 and 22.
 - `README.md` documents installation, configuration and development.
 - `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` describe the Claude Code plugin and point the skill loader at the root `SKILL.md`.
 
