@@ -9,7 +9,7 @@ Thin CLI over the NextDNS API (`https://api.nextdns.io`). One command, one JSON 
 
 ## Setup
 
-- Needs Node.js 18+ and `NEXTDNS_API_KEY` in the environment.
+- Needs Node.js 18.3+ (for `util.parseArgs`) and `NEXTDNS_API_KEY` in the environment.
 - The key is at the bottom of the account page: https://my.nextdns.io/account
 - Never print the key or write it into files. Environment only.
 - `NEXTDNS_PROFILE` sets a default profile id. `NEXTDNS_API_URL` overrides the API base URL. Rarely needed.

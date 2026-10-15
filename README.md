@@ -2,11 +2,11 @@
 
 Agent skill that controls and diagnoses NextDNS, the cloud DNS filtering service, through its HTTP API.
 
-A thin CLI wraps the whole API surface: one command, one JSON response. Node.js 18+, no dependencies. The skill is read-only by default: the agent asks the user before any state-changing command, and credentials come from the environment only.
+A thin CLI wraps the whole API surface: one command, one JSON response. Node.js 18.3+, no dependencies. The skill is read-only by default: the agent asks the user before any state-changing command, and credentials come from the environment only.
 
 ## What the skill can do
 
-**Diagnose filtering.** Find why a domain is blocked: `logs <profile> --search netflix.com --from -24h` returns each query with the exact rule that blocked it (blocklist, parental-control category or denylist entry). Rank what gets blocked: `analytics <profile> reasons`, `analytics <profile> domains --status blocked`. Break traffic down per device, protocol, query type, DNSSEC validation or destination, with time series such as `analytics <profile> status;series --from -7d`.
+**Diagnose filtering.** Find why a domain is blocked: `logs <profile> --search netflix.com --from -24h` returns each query with the exact rule that blocked it (blocklist, parental-control category or denylist entry). Rank what gets blocked: `analytics <profile> reasons`, `analytics <profile> domains --status blocked`. Break traffic down per device, protocol, query type, DNSSEC validation or destination, with time series such as `analytics <profile> "status;series" --from -7d --interval 1d`.
 
 **Watch DNS in real time.** `logs <profile> --stream --status blocked --max-events 50` follows the live SSE stream: one JSON object per event, bounded by `--max-events` or `--duration`, resumable with `--id` (the closing summary prints the resume id). To continue a page of recent logs without gaps, pass the `meta.stream.id` from a `logs` response as `--id`.
 
@@ -58,7 +58,7 @@ ln -s /path/to/this-repo ~/.config/opencode/skills/nextdns
 | `NEXTDNS_PROFILE` | no | Default profile id for commands that take none other |
 | `NEXTDNS_API_URL` | no | API base URL override (default `https://api.nextdns.io`) |
 
-The skill needs Node.js 18+. See [SKILL.md](SKILL.md) for the full command reference, useful API paths and agent workflows.
+The skill needs Node.js 18.3+. See [SKILL.md](SKILL.md) for the full command reference, useful API paths and agent workflows.
 
 ## Development
 
