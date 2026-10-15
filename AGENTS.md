@@ -1,41 +1,41 @@
-# Guia para agentes
+# Agent guide
 
-Este arquivo explica como alterar esta skill sem quebrá-la.
+This file explains how to change this skill without breaking it.
 
-## O que este repositório contém
+## What this repository contains
 
-Uma skill de agente que controla o NextDNS pela API HTTP documentada (`https://api.nextdns.io`), com um CLI fino em Node que imprime JSON.
+An agent skill that controls NextDNS through its documented HTTP API (`https://api.nextdns.io`), with a thin Node CLI that prints JSON.
 
-- `SKILL.md` é a fonte da verdade da skill.
-- `scripts/nextdns.mjs` é o CLI (Node 18+, sem dependências).
-- `tests/nextdns.test.mjs` roda o CLI contra um mock da API.
-- `README.md` documenta instalação, configuração e desenvolvimento.
-- `.claude-plugin/plugin.json` e `.claude-plugin/marketplace.json` descrevem o plugin do Claude Code e apontam o carregador de skill para o `SKILL.md` na raiz.
+- `SKILL.md` is the source of truth for the skill.
+- `scripts/nextdns.mjs` is the CLI (Node 18+, no dependencies).
+- `tests/nextdns.test.mjs` runs the CLI against a mock API.
+- `README.md` documents installation, configuration and development.
+- `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` describe the Claude Code plugin and point the skill loader at the root `SKILL.md`.
 
-Não há etapa de build.
+There is no build step.
 
-## Regras para mudanças
+## Rules for changes
 
-- Mantenha a skill em inglês e portável entre agentes. Não escreva instruções que limitem a uma ou duas ferramentas de agente específicas.
-- Credenciais só por variáveis de ambiente (`NEXTDNS_API_KEY`). Nunca coloque chaves em código, exemplos ou logs.
-- A skill lê por padrão. Ações que mudam estado exigem confirmação do usuário; mantenha essa regra no `SKILL.md`.
-- O CLI usa só a biblioteca padrão do Node. Não acrescente dependências.
-- O `parseArgs` do Node rejeita valores que começam com hífen; o CLI normaliza `--from -24h` para `--from=-24h` antes do parse. Não remova essa normalização: as datas relativas do NextDNS dependem dela.
-- O streaming de logs (`logs --stream`) exige sempre um limite (`--max-events` ou `--duration`); sessão sem limite trava o agente. Para encerrar o stream no meio do `for await`, use `break`: o iterador cancela o stream. Chamar `response.body.cancel()` com o iterador ativo lança `ReadableStream is locked`.
-- O endpoint de rewrites não tem PATCH na API: mudar um rewrite é remover e recriar. O CLI resolve nomes para ids antes de deletar e aborta se algum alvo não casa; preserve essas duas garantias.
-- Mantenha os dois arquivos `.claude-plugin/` em sincronia com o `SKILL.md` (nome, descrição, palavras-chave). Ao mudar o comportamento da skill, suba a versão no `plugin.json`.
-- OpenCode não usa manifest de plugin para skills: elas são descobertas dos diretórios de skills (`~/.config/opencode/skills`, `~/.claude/skills`, `.agents/skills`) ou instaladas pelo CLI do skills.sh. Não crie manifest para o OpenCode.
+- Keep the skill in English and portable across agents. Do not write instructions that tie it to one or two specific agent tools.
+- Credentials come from environment variables only (`NEXTDNS_API_KEY`). Never put keys in code, examples or logs.
+- The skill reads by default. State-changing actions require user confirmation; keep that rule in `SKILL.md`.
+- The CLI uses only the Node standard library. Do not add dependencies.
+- Node's `parseArgs` rejects values that start with a dash; the CLI normalizes `--from -24h` into `--from=-24h` before parsing. Do not remove that normalization: NextDNS relative dates depend on it.
+- Log streaming (`logs --stream`) always requires a bound (`--max-events` or `--duration`); an unbounded session hangs the agent. To stop the stream mid-`for await`, use `break`: the async iterator cancels the stream. Calling `response.body.cancel()` while the iterator is active throws `ReadableStream is locked`.
+- The rewrites endpoint has no PATCH in the API: changing a rewrite means removing and re-creating it. The CLI resolves names to ids before deleting and aborts when any target does not match; keep both guarantees.
+- Keep the two `.claude-plugin/` files in sync with `SKILL.md` (name, description, keywords). Bump the version in `plugin.json` whenever the skill's behavior changes.
+- OpenCode has no plugin manifest for skills: they are discovered from the skills directories (`~/.config/opencode/skills`, `~/.claude/skills`, `.agents/skills`) or installed by the skills.sh CLI. Do not create a manifest for OpenCode.
 
-## Verificações
+## Checks
 
-Antes de publicar, rode os testes:
+Before publishing, run the tests:
 
 ```sh
 node --test tests/*.test.mjs
 ```
 
-Nenhuma conta NextDNS é necessária; os testes usam um mock da API.
+No NextDNS account is needed; the tests run against a mock API.
 
-## Estilo de escrita
+## Writing style
 
-Linguagem simples e direta: voz ativa, frases curtas, um único termo para a mesma coisa. Identificadores, comandos, saídas de API e mensagens de erro ficam exatamente como são. Em português, acentuação e crase corretas.
+Plain, direct language: active voice, short sentences, one term per thing. Identifiers, commands, API output and error messages stay exactly as they are. Keep diacritics correct whenever Portuguese appears.
