@@ -10,6 +10,7 @@ Uma skill de agente que controla o NextDNS pela API HTTP documentada (`https://a
 - `scripts/nextdns.mjs` é o CLI (Node 18+, sem dependências).
 - `tests/nextdns.test.mjs` roda o CLI contra um mock da API.
 - `README.md` documenta instalação, configuração e desenvolvimento.
+- `.claude-plugin/plugin.json` e `.claude-plugin/marketplace.json` descrevem o plugin do Claude Code e apontam o carregador de skill para o `SKILL.md` na raiz.
 
 Não há etapa de build.
 
@@ -20,6 +21,8 @@ Não há etapa de build.
 - A skill lê por padrão. Ações que mudam estado exigem confirmação do usuário; mantenha essa regra no `SKILL.md`.
 - O CLI usa só a biblioteca padrão do Node. Não acrescente dependências.
 - O `parseArgs` do Node rejeita valores que começam com hífen; o CLI normaliza `--from -24h` para `--from=-24h` antes do parse. Não remova essa normalização: as datas relativas do NextDNS dependem dela.
+- Mantenha os dois arquivos `.claude-plugin/` em sincronia com o `SKILL.md` (nome, descrição, palavras-chave). Ao mudar o comportamento da skill, suba a versão no `plugin.json`.
+- OpenCode não usa manifest de plugin para skills: elas são descobertas dos diretórios de skills (`~/.config/opencode/skills`, `~/.claude/skills`, `.agents/skills`) ou instaladas pelo CLI do skills.sh. Não crie manifest para o OpenCode.
 
 ## Verificações
 

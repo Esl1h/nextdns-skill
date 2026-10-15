@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace-manifest.json",
+  "name": "nextdns",
+  "owner": {
+    "name": "Esl1h",
+    "url": "https://github.com/Esl1h"
+  },
+  "description": "Install the nextdns skill as a Claude Code plugin.",
+  "plugins": [
+    {
+      "name": "nextdns",
+      "source": "./",
+      "description": "Control and diagnose NextDNS DNS filtering through its HTTP API: profiles, DNS logs and analytics, allow and deny lists, parental control.",
+      "license": "MIT",
+      "keywords": ["nextdns", "dns", "adblock", "filtering", "parental-control", "network"]
+    }
+  ]
+}

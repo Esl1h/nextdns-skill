@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "nextdns",
+  "description": "Control and diagnose NextDNS DNS filtering through its HTTP API: profiles, DNS logs and analytics, allow and deny lists, parental control.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Esl1h",
+    "url": "https://github.com/Esl1h"
+  },
+  "homepage": "https://github.com/Esl1h/nextdns",
+  "repository": "https://github.com/Esl1h/nextdns",
+  "license": "MIT",
+  "keywords": ["nextdns", "dns", "adblock", "filtering", "parental-control", "network"],
+  "skills": ["./"]
+}
