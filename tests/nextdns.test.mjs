@@ -428,6 +428,19 @@ test("analytics series options fail without ;series or --from", async () => {
   );
 });
 
+test("analytics domains filters by --status", async () => {
+  await withApi(
+    () => ({ status: 200, json: { data: [] } }),
+    async (port, seen) => {
+      const result = await runCli(["analytics", "abc123", "domains", "--status", "blocked"], port);
+      assert.equal(result.status, 0);
+      const url = new URL(seen[0].url, "http://api");
+      assert.equal(url.pathname, "/profiles/abc123/analytics/domains");
+      assert.equal(url.searchParams.get("status"), "blocked");
+    },
+  );
+});
+
 test("analytics destinations requires --type before any request", async () => {
   await withApi(
     () => ({ status: 200, json: {} }),
