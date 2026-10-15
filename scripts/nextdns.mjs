@@ -3,7 +3,9 @@
 // Auth: X-Api-Key header. The key lives at the bottom of
 // https://my.nextdns.io/account and is read from the environment only.
 
-import { writeFileSync } from "node:fs";
+import { createWriteStream, existsSync, rmSync } from "node:fs";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import { parseArgs } from "node:util";
 
 const DEFAULT_BASE_URL = "https://api.nextdns.io";
@@ -459,6 +461,10 @@ const commands = {
   "logs-download": async (rest) => {
     const { values, positionals } = parse(rest, { ...profileOption, out: { type: "string" } });
     const profile = resolveProfile(values, positionals[0], "logs-download");
+    // Checked before the export request, which can take minutes to generate.
+    if (values.out && existsSync(values.out)) {
+      fail(`${values.out} already exists; pick another --out path or remove it first`);
+    }
     // redirect=0 keeps the response JSON (the file URL) instead of a redirect.
     const payload = await call("GET", `profiles/${profile}/logs/download`, {
       query: { redirect: 0 },
@@ -481,9 +487,16 @@ const commands = {
       process.stderr.write(`nextdns: HTTP ${response.status} fetching ${url}\n`);
       process.exit(1);
     }
-    const buffer = Buffer.from(await response.arrayBuffer());
-    writeFileSync(values.out, buffer);
-    print({ saved: values.out, bytes: buffer.byteLength, url });
+    // Stream to disk: exports can weigh hundreds of MB.
+    const file = createWriteStream(values.out, { flags: "wx" });
+    try {
+      await pipeline(Readable.fromWeb(response.body), file);
+    } catch (error) {
+      // EEXIST means someone else's file appeared meanwhile; leave it alone.
+      if (error.code !== "EEXIST") rmSync(values.out, { force: true });
+      fail(`download of ${url} failed: ${error.cause?.message ?? error.message}`);
+    }
+    print({ saved: values.out, bytes: file.bytesWritten, url });
   },
 
   "clear-logs": async (rest) => {

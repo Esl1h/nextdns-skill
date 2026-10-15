@@ -70,7 +70,7 @@ Rewrites are not in the official API docs yet; the shape above matches what the 
 - **Temporarily allow a broken site:** confirm with the user, then `allow <profile> example.com`. Remind them to revert later with `allow-remove`.
 - **Parental control:** `toggle profiles/<id>/parentalControl/categories/porn on`, or `toggle profiles/<id>/parentalControl/services/tiktok on`. `toggle` deactivates entries with `off`; `*-remove` deletes them. Blocklists, natives and TLDs have no active flag: there `toggle on` adds the entry and `off` deletes it. `off` on a missing entry changes nothing.
 - **Point a hostname at a local box:** `rewrite <profile> nas.home 192.168.1.100` (or a CNAME target). To change one, remove and re-add: the API has no PATCH for rewrites.
-- **Export logs for analysis:** `logs-download <profile> --out logs.csv`. The export is generated server-side; with millions of queries it can take minutes and weigh hundreds of MB.
+- **Export logs for analysis:** `logs-download <profile> --out logs.csv`. The export is generated server-side; with millions of queries it can take minutes and weigh hundreds of MB. The CLI streams it to disk and refuses to overwrite an existing file.
 - **Settings change:** `patch profiles/<id>/settings/performance '{"cnameFlattening":true}'`.
 
 ## Rules

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { once } from "node:events";
-import { mkdtempSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -453,6 +453,26 @@ test("logs-download --out saves the CSV file", async () => {
         assert.equal(saved.saved, out);
         assert.equal(saved.bytes, readFileSync(out, "utf8").length);
         assert.match(readFileSync(out, "utf8"), /bad\.com,blocked/);
+      },
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("logs-download --out refuses to overwrite before any request", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "nextdns-test-"));
+  const out = join(dir, "logs.csv");
+  writeFileSync(out, "keep me");
+  try {
+    await withApi(
+      () => ({ status: 200, json: {} }),
+      async (port, seen) => {
+        const result = await runCli(["logs-download", "abc123", "--out", out], port);
+        assert.equal(result.status, 1);
+        assert.match(result.stderr, /already exists/);
+        assert.equal(seen.length, 0);
+        assert.equal(readFileSync(out, "utf8"), "keep me");
       },
     );
   } finally {
