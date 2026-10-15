@@ -7,8 +7,8 @@
     "name": "Esl1h",
     "url": "https://github.com/Esl1h"
   },
-  "homepage": "https://github.com/Esl1h/nextdns",
-  "repository": "https://github.com/Esl1h/nextdns",
+  "homepage": "https://github.com/Esl1h/nextdns-skill",
+  "repository": "https://github.com/Esl1h/nextdns-skill",
   "license": "MIT",
   "keywords": ["nextdns", "dns", "adblock", "filtering", "parental-control", "network"],
   "skills": ["./"]

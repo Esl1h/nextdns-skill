@@ -9,13 +9,13 @@ Thin CLI, one command, one JSON response. Node.js 18+, no dependencies. Read-onl
 With the skills CLI (https://skills.sh), which supports OpenCode, Claude Code and other agents:
 
 ```sh
-npx skills add Esl1h/nextdns
+npx skills add Esl1h/nextdns-skill
 ```
 
 As a Claude Code plugin:
 
 ```text
-/plugin marketplace add Esl1h/nextdns
+/plugin marketplace add Esl1h/nextdns-skill
 /plugin install nextdns@nextdns
 ```
 
