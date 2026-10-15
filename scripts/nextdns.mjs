@@ -385,6 +385,15 @@ const commands = {
     });
     const profile = resolveProfile(values, positionals[0], "logs");
 
+    // Documented bounds; the API would reject them anyway, but this costs
+    // no request.
+    if (values.limit !== undefined) {
+      const limit = Number(values.limit);
+      if (!Number.isInteger(limit) || limit < 10 || limit > 1000) {
+        fail("logs --limit must be an integer between 10 and 1000");
+      }
+    }
+
     if (values.stream) {
       for (const option of ["from", "to", "sort", "limit", "cursor"]) {
         if (values[option] !== undefined) {
@@ -490,6 +499,14 @@ const commands = {
         `unknown metric '${base}'; valid metrics: ${ANALYTICS_METRICS.join(", ")} ` +
           "(append ;series for a time series)",
       );
+    }
+    // Documented bounds; the API would reject them anyway, but this costs
+    // no request.
+    if (values.limit !== undefined) {
+      const limit = Number(values.limit);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 500) {
+        fail("analytics --limit must be an integer between 1 and 500");
+      }
     }
     print(
       await call("GET", `profiles/${profile}/analytics/${metric}`, {

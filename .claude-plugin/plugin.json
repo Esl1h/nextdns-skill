@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "nextdns",
   "description": "Control and diagnose NextDNS DNS filtering through its HTTP API: profiles, DNS logs and live streaming, analytics, allow and deny lists, DNS rewrites, parental control.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": {
     "name": "Esl1h",
     "url": "https://github.com/Esl1h"

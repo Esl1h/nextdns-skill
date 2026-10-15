@@ -321,6 +321,30 @@ test("analytics rejects an unknown metric before any request", async () => {
   );
 });
 
+test("logs rejects limits below the API minimum before any request", async () => {
+  await withApi(
+    () => ({ status: 200, json: {} }),
+    async (port, seen) => {
+      const result = await runCli(["logs", "abc123", "--limit", "5"], port);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /between 10 and 1000/);
+      assert.equal(seen.length, 0);
+    },
+  );
+});
+
+test("analytics rejects limits above the API maximum before any request", async () => {
+  await withApi(
+    () => ({ status: 200, json: {} }),
+    async (port, seen) => {
+      const result = await runCli(["analytics", "abc123", "status", "--limit", "999"], port);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /between 1 and 500/);
+      assert.equal(seen.length, 0);
+    },
+  );
+});
+
 test("logs-download prints the export URL", async () => {
   await withApi(
     (req, res, port) => {

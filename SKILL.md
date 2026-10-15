@@ -64,12 +64,12 @@ Rewrites are not in the official API docs yet; the shape above matches what the 
 ## Workflows
 
 - **Why is domain X blocked?** `logs <profile> --search X --from -24h`. Each hit carries `reasons` naming the blocklist or parental-control rule. Then `get profiles/<id>/parentalControl` (or the matching section) to inspect the rule and propose a change.
-- **What is being queried right now?** `logs <profile> --stream --max-events 50`. Each stdout line is one log event; the stderr summary carries the last event id for `--id` resume. Filter with `--status blocked`, `--search X` or `--device <id>`.
+- **What is being queried right now?** `logs <profile> --stream --max-events 50`. Each stdout line is one log event; the stderr summary carries the last event id for `--id` resume. Filter with `--status blocked`, `--search X` or `--device <id>`. To stitch a page of recent logs with the live stream, pass the `meta.stream.id` from a `logs` response as `--id`.
 - **Top blocked apps:** `analytics <profile> reasons`, then `analytics <profile> domains --status blocked`.
 - **Temporarily allow a broken site:** confirm with the user, then `allow <profile> example.com`. Remind them to revert later with `allow-remove`.
 - **Parental control:** `toggle profiles/<id>/parentalControl/categories/porn on`, or `toggle profiles/<id>/parentalControl/services/tiktok on`. `toggle` deactivates entries with `off`; `*-remove` deletes them.
 - **Point a hostname at a local box:** `rewrite <profile> nas.home 192.168.1.100` (or a CNAME target). To change one, remove and re-add: the API has no PATCH for rewrites.
-- **Export logs for analysis:** `logs-download <profile> --out logs.csv`.
+- **Export logs for analysis:** `logs-download <profile> --out logs.csv`. The export is generated server-side; with millions of queries it can take minutes and weigh hundreds of MB.
 - **Settings change:** `patch profiles/<id>/settings/performance '{"cnameFlattening":true}'`.
 
 ## Rules
@@ -79,6 +79,7 @@ Rewrites are not in the official API docs yet; the shape above matches what the 
 - Always bound `logs --stream` with `--max-events` or `--duration`. An unbounded stream runs until interrupted.
 - Paginated responses carry `meta.pagination.cursor`. Continue with `--cursor`; there is no next page when it is null.
 - Dates accept relative values: `-24h`, `-7d`, `-3M`, `now`.
+- `logs --limit` runs from 10 to 1000 and `analytics --limit` from 1 to 500; the CLI enforces both before spending a request.
 - User errors can come back as HTTP 200 with `{ "errors": [...] }`. Always check for `errors` before treating output as success, and report `code` and `detail` as they are.
 - On HTTP 429 the CLI prints the wait (Retry-After). Wait it out; do not retry in a tight loop.
 - The API is beta. When a typed command fails, fall back to `get` or `patch` on the raw path before guessing.
