@@ -68,6 +68,8 @@ No build step. Tests run the CLI against a mock API server, including SSE stream
 node --test tests/*.test.mjs
 ```
 
+`evals/triggers.json` lists prompts that should and should not load the skill, including near misses such as Pi-hole, AdGuard Home and `/etc/hosts`. Feed it to a trigger evaluator, such as the skill-creator's `run_eval.py --eval-set evals/triggers.json --skill-path .`, after changing the `description` in `SKILL.md`.
+
 ## License
 
 MIT

@@ -1,0 +1,22 @@
+[
+  {"query": "why is my nextdns blocking login.microsoftonline.com? my work laptop cant sign in to teams since this morning", "should_trigger": true},
+  {"query": "o celular do meu filho (aparece como 'm14 blue' no painel) ta acessando tiktok de novo, consegue ver nos logs do nextdns e bloquear o app?", "should_trigger": true},
+  {"query": "which device on my home network keeps querying doubleclick.net? I use NextDNS on the router", "should_trigger": true},
+  {"query": "add nas.home pointing to 192.168.1.100 as a rewrite on my dns profile 3924d3", "should_trigger": true},
+  {"query": "quais foram os dominios mais bloqueados na ultima semana? quero um grafico por dia, uso o nextdns", "should_trigger": true},
+  {"query": "the bank site breaks with my dns filter on, can you allowlist it for now and remind me to undo it", "should_trigger": true},
+  {"query": "turn off the OISD blocklist on my NextDNS profile, it's giving too many false positives", "should_trigger": true},
+  {"query": "export my nextdns logs from the last month to a csv so I can analyze them in pandas", "should_trigger": true},
+  {"query": "watch my dns queries live for a minute and tell me what's getting blocked", "should_trigger": true},
+  {"query": "meu ip mudou e o dns sem criptografia parou de filtrar em casa, o linked ip do nextdns ta desatualizado?", "should_trigger": true},
+  {"query": "my pi-hole is blocking youtube ads too aggressively, how do I whitelist googlevideo.com in gravity?", "should_trigger": false},
+  {"query": "set up AdGuard Home on my raspberry pi with docker compose and use it as the LAN dns server", "should_trigger": false},
+  {"query": "create an A record for api.example.com pointing to 203.0.113.10 in cloudflare", "should_trigger": false},
+  {"query": "add 127.0.0.1 facebook.com to /etc/hosts so I stop procrastinating", "should_trigger": false},
+  {"query": "dig shows my new domain still resolving to the old server, how long does dns propagation take?", "should_trigger": false},
+  {"query": "systemd-resolved keeps overwriting /etc/resolv.conf on fedora, how do I set 9.9.9.9 permanently?", "should_trigger": false},
+  {"query": "configura o dhcp do roteador tp-link pra entregar o dns 1.1.1.1 pros clientes", "should_trigger": false},
+  {"query": "write a python script that resolves a list of domains with dnspython and reports which ones fail", "should_trigger": false},
+  {"query": "compare NextDNS, Control D and Quad9 pricing for a family plan", "should_trigger": false},
+  {"query": "my ublock origin filter list is breaking the checkout page on amazon, which rule is it?", "should_trigger": false}
+]
