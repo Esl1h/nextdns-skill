@@ -75,6 +75,10 @@ function usage() {
       "  --sort <asc|desc>     Logs sort order (default desc)",
       "  --raw                 Logs: include non-navigational queries",
       "  --type <t>            Analytics: destinations type (countries | gafam)",
+      "  --interval <i>        Series: bucket size, e.g. 1h, 1d, or seconds",
+      "  --alignment <a>       Series: start | end | clock",
+      "  --timezone <tz>       Series: IANA zone for clock alignment",
+      "  --partials <p>        Series: none | start | end | all",
       "  --stream              Logs: follow the live SSE stream",
       "  --max-events <n>      Stream: stop after n events",
       "  --duration <seconds>  Stream: stop after this many seconds",
@@ -241,6 +245,13 @@ const listOptions = {
 const timeOptions = {
   from: { type: "string" },
   to: { type: "string" },
+};
+
+const seriesOptions = {
+  interval: { type: "string" },
+  alignment: { type: "string" },
+  timezone: { type: "string" },
+  partials: { type: "string" },
 };
 
 const profileOption = {
@@ -512,6 +523,7 @@ const commands = {
       ...profileOption,
       device: { type: "string" },
       type: { type: "string" },
+      ...seriesOptions,
     });
     let profile;
     let metric;
@@ -531,6 +543,15 @@ const commands = {
         `unknown metric '${base}'; valid metrics: ${ANALYTICS_METRICS.join(", ")} ` +
           "(append ;series for a time series)",
       );
+    }
+    const series = metric.endsWith(";series");
+    for (const option of Object.keys(seriesOptions)) {
+      if (!series && values[option] !== undefined) {
+        fail(`--${option} only applies to time series; append ;series to the metric`);
+      }
+    }
+    if (series && values.from === undefined) {
+      fail("time series need --from, e.g. --from -7d");
     }
     if (base === "destinations" && values.type !== "countries" && values.type !== "gafam") {
       fail("analytics destinations needs --type countries or --type gafam");
@@ -552,6 +573,10 @@ const commands = {
           to: values.to,
           device: values.device,
           type: values.type,
+          interval: values.interval,
+          alignment: values.alignment,
+          timezone: values.timezone,
+          partials: values.partials,
         },
       }),
     );

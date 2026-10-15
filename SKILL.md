@@ -36,7 +36,7 @@ Run from this skill's directory. All output is JSON. The profile id comes from t
 | `node scripts/nextdns.mjs get <path>` | GET any endpoint |
 | `node scripts/nextdns.mjs patch <path> <json>` / `post <path> [json]` / `delete <path>` | Write any endpoint |
 
-Append `;series` to an analytics metric for a time series (e.g. `analytics <profile> status;series --from -7d`).
+Append `;series` to an analytics metric for a time series; it needs `--from` and accepts `--interval` (`1h`, `1d` or seconds), `--alignment start|end|clock`, `--timezone <IANA>` and `--partials none|start|end|all`. Quote the metric in the shell: `analytics <profile> "status;series" --from -7d --interval 1d`.
 
 ## Useful paths
 

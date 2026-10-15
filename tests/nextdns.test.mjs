@@ -390,6 +390,44 @@ test("analytics rejects an unknown metric before any request", async () => {
   );
 });
 
+test("analytics series passes interval, alignment, timezone and partials", async () => {
+  await withApi(
+    () => ({ status: 200, json: { data: [] } }),
+    async (port, seen) => {
+      const result = await runCli(
+        [
+          "analytics", "abc123", "status;series", "--from", "-7d", "--interval", "1d",
+          "--alignment", "clock", "--timezone", "America/Sao_Paulo", "--partials", "all",
+        ],
+        port,
+      );
+      assert.equal(result.status, 0);
+      const url = new URL(seen[0].url, "http://api");
+      assert.equal(url.pathname, "/profiles/abc123/analytics/status;series");
+      assert.equal(url.searchParams.get("from"), "-7d");
+      assert.equal(url.searchParams.get("interval"), "1d");
+      assert.equal(url.searchParams.get("alignment"), "clock");
+      assert.equal(url.searchParams.get("timezone"), "America/Sao_Paulo");
+      assert.equal(url.searchParams.get("partials"), "all");
+    },
+  );
+});
+
+test("analytics series options fail without ;series or --from", async () => {
+  await withApi(
+    () => ({ status: 200, json: {} }),
+    async (port, seen) => {
+      const noSeries = await runCli(["analytics", "abc123", "status", "--interval", "1d"], port);
+      assert.equal(noSeries.status, 1);
+      assert.match(noSeries.stderr, /append ;series/);
+      const noFrom = await runCli(["analytics", "abc123", "status;series"], port);
+      assert.equal(noFrom.status, 1);
+      assert.match(noFrom.stderr, /time series need --from/);
+      assert.equal(seen.length, 0);
+    },
+  );
+});
+
 test("analytics destinations requires --type before any request", async () => {
   await withApi(
     () => ({ status: 200, json: {} }),
