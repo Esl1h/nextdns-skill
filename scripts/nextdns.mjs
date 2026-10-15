@@ -218,6 +218,15 @@ function resolveProfile(values, positional, label) {
   return profile;
 }
 
+// Catch the usual paste mistakes (URLs, paths, ports, spaces) before they
+// reach the API as bogus list entries.
+function checkDomains(domains) {
+  const bad = domains.filter((domain) => !/^[^\s/:@?#]+$/.test(domain));
+  if (bad.length > 0) {
+    fail(`not a bare domain: ${bad.join(", ")} (use e.g. example.com, without scheme, port or path)`);
+  }
+}
+
 const listOptions = {
   limit: { type: "string" },
   cursor: { type: "string" },
@@ -250,6 +259,7 @@ const addEntries = (kind, label) => async (rest) => {
   if (domains.length === 0) {
     fail(`usage: nextdns ${label} <profile> <domain>... (or --profile <id> <domain>...)`);
   }
+  checkDomains(domains);
   const profile = resolveProfile({}, profileArg, label);
   const results = [];
   for (const domain of domains) {
@@ -266,6 +276,7 @@ const removeEntries = (kind, label) => async (rest) => {
   if (domains.length === 0) {
     fail(`usage: nextdns ${label} <profile> <domain>... (or --profile <id> <domain>...)`);
   }
+  checkDomains(domains);
   const profile = resolveProfile({}, profileArg, label);
   const results = [];
   for (const domain of domains) {

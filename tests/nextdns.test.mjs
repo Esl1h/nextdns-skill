@@ -187,6 +187,21 @@ test("deny posts each domain to the denylist", async () => {
   );
 });
 
+test("deny rejects URLs and paths before any request", async () => {
+  await withApi(
+    () => ({ status: 201, json: {} }),
+    async (port, seen) => {
+      const result = await runCli(
+        ["deny", "abc123", "ok.com", "https://bad.com/x", "evil.com:443"],
+        port,
+      );
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /not a bare domain: https:\/\/bad\.com\/x, evil\.com:443/);
+      assert.equal(seen.length, 0);
+    },
+  );
+});
+
 test("allow works with --profile instead of a profile argument", async () => {
   await withApi(
     (req) => ({ status: 201, json: { data: { id: req.body.id } } }),
