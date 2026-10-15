@@ -25,7 +25,7 @@ Run from this skill's directory. All output is JSON. The profile id comes from t
 | `node scripts/nextdns.mjs logs <profile> --stream --status blocked --max-events 50` | Live SSE tail; `--duration <s>` bounds it too, `--id` resumes |
 | `node scripts/nextdns.mjs logs-download <profile> [--out file]` | CSV log export URL, or the file itself with `--out` |
 | `node scripts/nextdns.mjs clear-logs <profile>` | Permanently delete all logs (state-changing) |
-| `node scripts/nextdns.mjs analytics <profile> <metric> [--from -7d] [--limit 20]` | Metrics: `status`, `domains`, `reasons`, `ips`, `devices`, `protocols`, `queryTypes`, `ipVersions`, `dnssec`, `encryption`, `destinations` |
+| `node scripts/nextdns.mjs analytics <profile> <metric> [--from -7d] [--limit 20]` | Metrics: `status`, `domains`, `reasons`, `ips`, `devices`, `protocols`, `queryTypes`, `ipVersions`, `dnssec`, `encryption`, `destinations` (needs `--type countries\|gafam`) |
 | `node scripts/nextdns.mjs allowlist <profile>` / `denylist <profile>` | List entries |
 | `node scripts/nextdns.mjs rewrites <profile>` | List DNS rewrites |
 | `node scripts/nextdns.mjs allow <profile> <domain>...` / `deny <profile> <domain>...` | Add entries |

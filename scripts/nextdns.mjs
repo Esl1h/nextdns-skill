@@ -532,6 +532,9 @@ const commands = {
           "(append ;series for a time series)",
       );
     }
+    if (base === "destinations" && values.type !== "countries" && values.type !== "gafam") {
+      fail("analytics destinations needs --type countries or --type gafam");
+    }
     // Documented bounds; the API would reject them anyway, but this costs
     // no request.
     if (values.limit !== undefined) {

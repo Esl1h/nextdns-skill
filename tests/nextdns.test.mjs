@@ -390,6 +390,18 @@ test("analytics rejects an unknown metric before any request", async () => {
   );
 });
 
+test("analytics destinations requires --type before any request", async () => {
+  await withApi(
+    () => ({ status: 200, json: {} }),
+    async (port, seen) => {
+      const result = await runCli(["analytics", "abc123", "destinations"], port);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /--type countries or --type gafam/);
+      assert.equal(seen.length, 0);
+    },
+  );
+});
+
 test("logs rejects limits below the API minimum before any request", async () => {
   await withApi(
     () => ({ status: 200, json: {} }),
