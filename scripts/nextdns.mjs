@@ -83,6 +83,7 @@ function usage() {
       "  --max-events <n>      Stream: stop after n events",
       "  --duration <seconds>  Stream: stop after this many seconds",
       "  --id <id>             Stream: resume from the last event id",
+      "  --fields <a,b,...>    Logs: keep only these entry keys, e.g. domain,status,reasons",
       "",
       "Environment:",
       "  NEXTDNS_API_KEY       Required (bottom of https://my.nextdns.io/account)",
@@ -213,6 +214,13 @@ function print(payload) {
 }
 
 // Unwrap {data: [...]} envelopes; some endpoints return bare arrays.
+// Keep only the requested top-level keys of a log entry. Full entries repeat
+// transport details (timestamp, protocol, clientIp) that cost context and
+// rarely matter for a diagnosis.
+function pick(entry, fields) {
+  return fields ? Object.fromEntries(fields.filter((f) => f in entry).map((f) => [f, entry[f]])) : entry;
+}
+
 function entriesOf(payload) {
   return Array.isArray(payload) ? payload : (payload?.data ?? []);
 }
@@ -323,7 +331,7 @@ function parseSseBlock(block) {
 
 // Follow /logs/stream over SSE. maxEvents and duration bound the session so
 // the command always ends on its own.
-async function streamLogs(profile, { search, status, device, raw, id, maxEvents, duration }) {
+async function streamLogs(profile, { search, status, device, raw, id, maxEvents, duration, fields }) {
   const controller = new AbortController();
   const timer = duration ? setTimeout(() => controller.abort(), duration * 1000) : null;
   let events = 0;
@@ -364,7 +372,8 @@ async function streamLogs(profile, { search, status, device, raw, id, maxEvents,
         if (!event) continue;
         lastId = event.id ?? lastId;
         events += 1;
-        const line = event.id === undefined ? event.data : { id: event.id, ...event.data };
+        const data = pick(event.data, fields);
+        const line = event.id === undefined ? data : { id: event.id, ...data };
         process.stdout.write(`${JSON.stringify(line)}\n`);
         if (maxEvents !== undefined && events >= maxEvents) {
           // Breaking releases the async iterator, which cancels the stream.
@@ -410,8 +419,10 @@ const commands = {
       "max-events": { type: "string" },
       duration: { type: "string" },
       id: { type: "string" },
+      fields: { type: "string" },
     });
     const profile = resolveProfile(values, positionals[0], "logs");
+    const fields = values.fields?.split(",").map((f) => f.trim()).filter(Boolean);
 
     // Documented bounds; the API would reject them anyway, but this costs
     // no request.
@@ -448,25 +459,28 @@ const commands = {
         id: values.id,
         maxEvents,
         duration,
+        fields,
       });
       return;
     }
 
-    print(
-      await call("GET", `profiles/${profile}/logs`, {
-        query: {
-          limit: values.limit,
-          cursor: values.cursor,
-          from: values.from,
-          to: values.to,
-          search: values.search,
-          status: values.status,
-          device: values.device,
-          sort: values.sort,
-          raw: values.raw ? 1 : undefined,
-        },
-      }),
-    );
+    const payload = await call("GET", `profiles/${profile}/logs`, {
+      query: {
+        limit: values.limit,
+        cursor: values.cursor,
+        from: values.from,
+        to: values.to,
+        search: values.search,
+        status: values.status,
+        device: values.device,
+        sort: values.sort,
+        raw: values.raw ? 1 : undefined,
+      },
+    });
+    if (fields && Array.isArray(payload.data)) {
+      payload.data = payload.data.map((entry) => pick(entry, fields));
+    }
+    print(payload);
   },
 
   "logs-download": async (rest) => {

@@ -21,7 +21,7 @@ Run from this skill's directory. All output is JSON. The profile id comes from t
 | Command | Purpose |
 | --- | --- |
 | `node scripts/nextdns.mjs profiles` | List profiles (id, name) |
-| `node scripts/nextdns.mjs logs <profile> [--search X] [--status blocked] [--from -24h] [--raw] [--cursor C]` | DNS query logs |
+| `node scripts/nextdns.mjs logs <profile> [--search X] [--status blocked] [--from -24h] [--raw] [--fields a,b] [--cursor C]` | DNS query logs; `--fields` keeps only those entry keys (also with `--stream`) |
 | `node scripts/nextdns.mjs logs <profile> --stream --status blocked --max-events 50` | Live SSE tail; `--duration <s>` bounds it too, `--id` resumes |
 | `node scripts/nextdns.mjs logs-download <profile> [--out file]` | CSV log export URL, or the file itself with `--out` |
 | `node scripts/nextdns.mjs clear-logs <profile>` | Permanently delete all logs (state-changing) |
@@ -64,7 +64,7 @@ Rewrites are not in the official API docs yet; the shape above matches what the 
 
 ## Workflows
 
-- **Why is domain X blocked?** `logs <profile> --search X --from -24h`. Each hit carries `reasons` naming the blocklist or parental-control rule. Then `get profiles/<id>/parentalControl` (or the matching section) to inspect the rule and propose a change.
+- **Why is domain X blocked?** `logs <profile> --search X --from -24h --fields timestamp,domain,device,status,reasons`. `--fields` drops transport details that waste context. Each hit carries `reasons` naming the blocklist or parental-control rule. Then `get profiles/<id>/parentalControl` (or the matching section) to inspect the rule and propose a change.
 - **What is being queried right now?** `logs <profile> --stream --max-events 50`. Each stdout line is one log event; the stderr summary carries the last event id for `--id` resume. Filter with `--status blocked`, `--search X` or `--device <id>`. To stitch a page of recent logs with the live stream, pass the `meta.stream.id` from a `logs` response as `--id`.
 - **Top blocked apps:** `analytics <profile> reasons`, then `analytics <profile> domains --status blocked`.
 - **Temporarily allow a broken site:** confirm with the user, then `allow <profile> example.com`. Remind them to revert later with `allow-remove`.

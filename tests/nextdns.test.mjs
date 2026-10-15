@@ -650,6 +650,34 @@ test("logs --stream stops at --max-events and prints a resume hint", async () =>
   );
 });
 
+test("logs --fields keeps only the listed keys and the meta", async () => {
+  const entry = { timestamp: "t", domain: "bad.com", protocol: "UDP", status: "blocked", reasons: [] };
+  await withApi(
+    () => ({ status: 200, json: { data: [entry], meta: { pagination: { cursor: "c1" } } } }),
+    async (port) => {
+      const result = await runCli(["logs", "abc123", "--fields", "domain,status,device"], port);
+      assert.equal(result.status, 0);
+      const output = JSON.parse(result.stdout);
+      assert.deepEqual(output.data, [{ domain: "bad.com", status: "blocked" }]);
+      assert.equal(output.meta.pagination.cursor, "c1");
+    },
+  );
+});
+
+test("logs --stream --fields trims each event but keeps its id", async () => {
+  await withApi(
+    sseRespond(1),
+    async (port) => {
+      const result = await runCli(
+        ["logs", "abc123", "--stream", "--max-events", "1", "--fields", "domain"],
+        port,
+      );
+      assert.equal(result.status, 0);
+      assert.deepEqual(JSON.parse(result.stdout.trim()), { id: "ev1", domain: "d1.com" });
+    },
+  );
+});
+
 test("logs --stream without a bound fails before any request", async () => {
   await withApi(
     sseRespond(1),
