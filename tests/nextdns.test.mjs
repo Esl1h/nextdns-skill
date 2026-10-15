@@ -474,6 +474,18 @@ test("logs --stream stops at --max-events and prints a resume hint", async () =>
   );
 });
 
+test("logs --stream without a bound fails before any request", async () => {
+  await withApi(
+    sseRespond(1),
+    async (port, seen) => {
+      const result = await runCli(["logs", "abc123", "--stream"], port);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /--max-events <n> or --duration <seconds>/);
+      assert.equal(seen.length, 0);
+    },
+  );
+});
+
 test("logs --stream stops after --duration seconds", async () => {
   await withApi(
     sseRespond(1),

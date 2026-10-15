@@ -76,7 +76,7 @@ Rewrites are not in the official API docs yet; the shape above matches what the 
 
 - Read-only by default. Ask the user before `allow`, `deny`, `*-remove`, `toggle`, `patch`, `post`, `delete`, `rewrite`, `rewrite-remove`, `clear-logs`.
 - `clear-logs` permanently deletes every log of the profile.
-- Always bound `logs --stream` with `--max-events` or `--duration`. An unbounded stream runs until interrupted.
+- `logs --stream` needs `--max-events` or `--duration`; the CLI refuses an unbounded stream.
 - Paginated responses carry `meta.pagination.cursor`. Continue with `--cursor`; there is no next page when it is null.
 - Dates accept relative values: `-24h`, `-7d`, `-3M`, `now`.
 - `logs --limit` runs from 10 to 1000 and `analytics --limit` from 1 to 500; the CLI enforces both before spending a request.

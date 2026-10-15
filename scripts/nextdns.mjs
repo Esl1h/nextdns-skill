@@ -294,7 +294,7 @@ function parseSseBlock(block) {
 }
 
 // Follow /logs/stream over SSE. maxEvents and duration bound the session so
-// the command always ends on its own; unbounded runs rely on Ctrl-C.
+// the command always ends on its own.
 async function streamLogs(profile, { search, status, device, raw, id, maxEvents, duration }) {
   const controller = new AbortController();
   const timer = duration ? setTimeout(() => controller.abort(), duration * 1000) : null;
@@ -407,6 +407,10 @@ const commands = {
       const duration = values.duration === undefined ? undefined : Number(values.duration);
       if (duration !== undefined && (!Number.isFinite(duration) || duration < 1)) {
         fail("--duration must be a number of seconds >= 1");
+      }
+      // An unbounded stream never returns, which hangs an agent waiting on it.
+      if (maxEvents === undefined && duration === undefined) {
+        fail("--stream needs a bound: pass --max-events <n> or --duration <seconds>");
       }
       await streamLogs(profile, {
         search: values.search,
