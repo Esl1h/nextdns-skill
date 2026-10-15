@@ -603,6 +603,12 @@ const commands = {
     const list = await call("GET", arrayPath);
     const entries = entriesOf(list);
     const exists = entries.some((entry) => entry?.id === id);
+    // Turning off something that is not there is already done; creating an
+    // inactive entry would only add clutter.
+    if (!exists && !active) {
+      print({ ok: true, unchanged: true, id, active });
+      return;
+    }
     const result = exists
       ? await call("PATCH", path, { body: { active } })
       : await call("POST", arrayPath, { body: { id, active } });

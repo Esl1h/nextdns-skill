@@ -268,6 +268,19 @@ test("toggle posts a missing entry", async () => {
   );
 });
 
+test("toggle off on a missing entry changes nothing", async () => {
+  await withApi(
+    () => ({ status: 200, json: { data: [] } }),
+    async (port, seen) => {
+      const result = await runCli(["toggle", "profiles/abc123/parentalControl/services/tiktok", "off"], port);
+      assert.equal(result.status, 0);
+      assert.equal(seen.length, 1);
+      assert.equal(seen[0].method, "GET");
+      assert.deepEqual(JSON.parse(result.stdout), { ok: true, unchanged: true, id: "tiktok", active: false });
+    },
+  );
+});
+
 test("rewrites lists entries", async () => {
   await withApi(
     () => ({ status: 200, json: { data: [{ id: "r1", name: "nas.home", content: "192.168.1.100" }] } }),
