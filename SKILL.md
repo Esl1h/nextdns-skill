@@ -52,6 +52,7 @@ profiles/<id>/parentalControl/services      service entries, e.g. tiktok, fortni
 profiles/<id>/parentalControl/categories    category entries, e.g. porn, social-networks, gambling
 profiles/<id>/denylist / allowlist          domain entries with an active flag
 profiles/<id>/rewrites                      hostname overrides: POST {name, content}, DELETE by id, no PATCH
+profiles/<id>/setup                         endpoints, DoH/DoT ids, linkedIp (updateToken is a secret)
 profiles/<id>/settings/performance          cnameFlattening, cacheBoost, ecs
 profiles/<id>/settings/logs                 enabled, retention, location
 profiles/<id>/settings/blockPage            block page toggle
@@ -67,11 +68,13 @@ Rewrites are not in the official API docs yet; the shape above matches what the 
 - **Why is domain X blocked?** `logs <profile> --search X --from -24h --fields timestamp,domain,device,status,reasons`. `--fields` drops transport details that waste context. Each hit carries `reasons` naming the blocklist or parental-control rule. Then `get profiles/<id>/parentalControl` (or the matching section) to inspect the rule and propose a change.
 - **What is being queried right now?** `logs <profile> --stream --max-events 50`. Each stdout line is one log event; the stderr summary carries the last event id for `--id` resume. Filter with `--status blocked`, `--search X` or `--device <id>`. To stitch a page of recent logs with the live stream, pass the `meta.stream.id` from a `logs` response as `--id`.
 - **Top blocked apps:** `analytics <profile> reasons`, then `analytics <profile> domains --status blocked`.
-- **Temporarily allow a broken site:** confirm with the user, then `allow <profile> example.com`. Remind them to revert later with `allow-remove`.
+- **Temporarily allow a broken site:** confirm with the user, then `allow <profile> example.com`. Note every domain you added; before ending the task, list them and offer `allow-remove` with the exact names. If an entry was already there, it is not yours to remove.
 - **Parental control:** `toggle profiles/<id>/parentalControl/categories/porn on`, or `toggle profiles/<id>/parentalControl/services/tiktok on`. `toggle` deactivates entries with `off`; `*-remove` deletes them. Blocklists, natives and TLDs have no active flag: there `toggle on` adds the entry and `off` deletes it. `off` on a missing entry changes nothing.
 - **Point a hostname at a local box:** `rewrite <profile> nas.home 192.168.1.100` (or a CNAME target). To change one, remove and re-add: the API has no PATCH for rewrites.
 - **Export logs for analysis:** `logs-download <profile> --out logs.csv`. The export is generated server-side; with millions of queries it can take minutes and weigh hundreds of MB. The CLI streams it to disk and refuses to overwrite an existing file.
 - **Settings change:** `patch profiles/<id>/settings/performance '{"cnameFlattening":true}'`.
+- **Linked IP (non-encrypted DNS from a dynamic IP):** `get profiles/<id>/setup`; `data.linkedIp.ip` is the IP NextDNS currently trusts. If it differs from the user's public IP, plain DNS from that network falls back to defaults. The response also carries `linkedIp.updateToken`, a credential: never repeat it, and let the user update the IP from their router or the NextDNS setup page.
+- **Compare two profiles:** `get profiles/<a>` and `get profiles/<b>`, then report differences per section (`security`, `privacy`, `parentalControl`, `denylist`, `allowlist`, `settings`) instead of dumping both.
 
 ## Rules
 
