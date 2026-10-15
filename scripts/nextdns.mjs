@@ -21,6 +21,10 @@ const ANALYTICS_METRICS = [
   "destinations",
 ];
 
+// Arrays whose entries have no active flag: an entry is on while it exists,
+// so toggling means adding or deleting it instead of patching.
+const PRESENCE_ARRAYS = ["/privacy/blocklists", "/privacy/natives", "/security/tlds"];
+
 function fail(message) {
   process.stderr.write(`nextdns: ${message}\n`);
   process.exit(1);
@@ -607,6 +611,14 @@ const commands = {
     // inactive entry would only add clutter.
     if (!exists && !active) {
       print({ ok: true, unchanged: true, id, active });
+      return;
+    }
+    if (PRESENCE_ARRAYS.some((suffix) => arrayPath.endsWith(suffix))) {
+      if (exists === active) {
+        print({ ok: true, unchanged: true, id, active });
+      } else {
+        print(active ? await call("POST", arrayPath, { body: { id } }) : await call("DELETE", path));
+      }
       return;
     }
     const result = exists

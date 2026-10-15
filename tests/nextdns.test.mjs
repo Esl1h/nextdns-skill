@@ -281,6 +281,47 @@ test("toggle off on a missing entry changes nothing", async () => {
   );
 });
 
+test("toggle off deletes a blocklist, which has no active flag", async () => {
+  await withApi(
+    (req) => (req.method === "GET"
+      ? { status: 200, json: { data: [{ id: "oisd", entries: 10 }] } }
+      : { status: 204 }),
+    async (port, seen) => {
+      const result = await runCli(["toggle", "profiles/abc123/privacy/blocklists/oisd", "off"], port);
+      assert.equal(result.status, 0);
+      assert.deepEqual(seen.map((r) => r.method), ["GET", "DELETE"]);
+      assert.equal(seen[1].url, "/profiles/abc123/privacy/blocklists/oisd");
+    },
+  );
+});
+
+test("toggle on adds a missing TLD without an active flag", async () => {
+  await withApi(
+    (req) => (req.method === "GET"
+      ? { status: 200, json: { data: [] } }
+      : { status: 201, json: { data: { id: req.body.id } } }),
+    async (port, seen) => {
+      const result = await runCli(["toggle", "profiles/abc123/security/tlds/zip", "on"], port);
+      assert.equal(result.status, 0);
+      assert.equal(seen[1].method, "POST");
+      assert.equal(seen[1].url, "/profiles/abc123/security/tlds");
+      assert.deepEqual(seen[1].body, { id: "zip" });
+    },
+  );
+});
+
+test("toggle on an existing native tracker changes nothing", async () => {
+  await withApi(
+    () => ({ status: 200, json: { data: [{ id: "apple" }] } }),
+    async (port, seen) => {
+      const result = await runCli(["toggle", "profiles/abc123/privacy/natives/apple", "on"], port);
+      assert.equal(result.status, 0);
+      assert.equal(seen.length, 1);
+      assert.equal(JSON.parse(result.stdout).unchanged, true);
+    },
+  );
+});
+
 test("rewrites lists entries", async () => {
   await withApi(
     () => ({ status: 200, json: { data: [{ id: "r1", name: "nas.home", content: "192.168.1.100" }] } }),

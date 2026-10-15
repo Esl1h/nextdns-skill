@@ -12,7 +12,7 @@ A thin CLI wraps the whole API surface: one command, one JSON response. Node.js 
 
 **Manage allow and deny lists.** `allow` and `deny <profile> <domain>...` add entries; `allow-remove` and `deny-remove` remove them. Useful for temporarily allowing a site that a blocklist breaks, then reverting.
 
-**Toggle parental control and blocklists.** `toggle profiles/<id>/parentalControl/services/tiktok on` blocks an app, `.../categories/porn on` blocks a category, `.../privacy/blocklists/oisd off` switches a blocklist off. `toggle` creates missing entries, so enabling something new is one command.
+**Toggle parental control and blocklists.** `toggle profiles/<id>/parentalControl/services/tiktok on` blocks an app, `.../categories/porn on` blocks a category, `.../privacy/blocklists/oisd off` switches a blocklist off. `toggle` creates missing entries, so enabling something new is one command. Blocklists, native trackers and TLDs have no active flag, so for them `off` deletes the entry.
 
 **Rewrite DNS for local hostnames.** `rewrite <profile> nas.home 192.168.1.100` points a hostname at an IP or CNAME target, `rewrites` lists them, `rewrite-remove` deletes by name or id. The API has no update for rewrites: changing one means remove and re-add.
 
